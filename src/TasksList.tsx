@@ -1,35 +1,54 @@
-import React from "react";
+import React, {ChangeEvent} from 'react';
+import {JSX} from 'react'
 import {TaskType} from "./Todolist";
+import s from './App.module.css'
+import {FilterValuesType} from "./App";
 
-export type TasksListPropsType = {
+export type TasksListProps = {
     tasks: Array<TaskType>
-    deleteTask: (taskID: string) => void
-};
+    removeTask: (taskID: string) => void
+    filterValue: FilterValuesType
+    changeTaskStatus: (taskID: string, newIsDoneValue: boolean) => void
+}
 
-export const TasksList: React.FC<TasksListPropsType> = (props) => {
+const TasksList: React.FC<TasksListProps> = (props): JSX.Element => {
+
     const {
         tasks,
-        deleteTask
-    } = props;
+        removeTask,
+        filterValue,
+        changeTaskStatus,
+    } = props
 
-    const tasksListItems: JSX.Element[] | JSX.Element = tasks.length
+    const tasksItems: JSX.Element[] | JSX.Element = tasks.length
         ? tasks.map((task) => {
-            const deleteTaskOnClickHandler = () => {
-                deleteTask(task.id)
+            const removeTaskOnClickHandler = () => removeTask(task.id);
+            const changeTaskStatusHandler = (e: ChangeEvent<HTMLInputElement>) => {
+                changeTaskStatus(task.id, e.currentTarget.checked)
             };
+            const taskClasses = task.isDone ? s.taskIsDone : s.task;
             return (
                 <li key={task.id}>
+                    <div>
+                        <input
+                            type={'checkbox'}
+                            checked={task.isDone}
+                            onChange={changeTaskStatusHandler}
+                        />
+                        <span className={taskClasses}>{task.title}</span>
+                    </div>
                     <button
-                        onClick={deleteTaskOnClickHandler}
+                        onClick={removeTaskOnClickHandler}
                     >x
                     </button>
-                    <input type={'checkbox'} checked={task.isDone}/>
-                    <span>{task.title}</span>
                 </li>
             )
-        }) : <span>Task list is empty</span>;
+        })
+        : <span className={s.warning}>{`${filterValue} tasks list is empty`.toUpperCase()}</span>
 
     return (
-        <ul>{tasksListItems}</ul>
+        <ul>{tasksItems}</ul>
     );
 };
+
+export default TasksList;

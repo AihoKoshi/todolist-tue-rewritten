@@ -1,64 +1,73 @@
-import React, {ChangeEvent, KeyboardEvent, useState} from "react";
-import {TasksList} from "./TasksList";
-import {FilterValuesType} from "./App";
+import React, {KeyboardEvent, ChangeEvent, FC, useState} from 'react';
+import TasksList from "./TasksList";
 import s from './App.module.css'
+import {FilterValuesType} from "./App";
+import {Simulate} from "react-dom/test-utils";
+import input = Simulate.input;
 
 export type TaskType = {
     id: string
     title: string
     isDone: boolean
-};
+}
 
 export type TodolistPropsType = {
     todolistTitle: string
     tasks: Array<TaskType>
-    deleteTask: (taskID: string) => void
-    addTask: (newTaskTitle: string) => void
+    removeTask: (taskID: string) => void
     changeFilter: (filterValue: FilterValuesType) => void
-};
+    addTask: (inputValue: string) => void
+    filterValue: FilterValuesType
+    changeTaskStatus: (taskID: string, newIsDoneValue: boolean) => void
+}
 
-export const Todolist: React.FC<TodolistPropsType> = (props) => {
+const Todolist: FC<TodolistPropsType> = (props): React.ReactElement | null => {
+
     const {
         todolistTitle,
         tasks,
-        deleteTask,
+        removeTask,
+        changeFilter,
         addTask,
-        changeFilter
-    } = props;
+        filterValue,
+        changeTaskStatus,
+    } = props
 
-    let [newTaskTitle, setNewTaskTitle] = useState<string>('');
-    let [error, setError] = useState<boolean>(false);
+    const [inputValue, setInputValue] = useState<string>('');
+    const [error, setError] = useState<boolean>(false);
 
     const addTaskOnClickHandler = () => {
-        !addTaskBtnDisabled && addTask(newTaskTitle.trim())
-        error && setError(!error)
-        setNewTaskTitle('')
+        addTaskBtnDisabled ? setError(true) : addTask(inputValue.trim())
+        setInputValue('')
     };
-
     const inputOnChangeHandler = (e: ChangeEvent<HTMLInputElement>) => {
         error && setError(false)
-        setNewTaskTitle(e.currentTarget.value)
-    };
-
+        setInputValue(e.currentTarget.value);
+    }
     const inputOnKeyDownHandler = (e: KeyboardEvent<HTMLInputElement>) => {
-        e.key === 'Enter' && addTaskOnClickHandler()
+        inputValueEmptyWarning && setError(true)
+        !inputValueLengthRestriction && e.key === 'Enter' && addTaskOnClickHandler()
     };
+    const filterOnClickHandlerCreator = (filter: FilterValuesType): () => void => (): void => changeFilter(filter);
+    const filterAllBtnStyleController = filterValue === 'all' ? s.filterBtnActive : s.filterBtn;
+    const filterActiveBtnStyleController = filterValue === 'active' ? s.filterBtnActive : s.filterBtn;
+    const filterCompletedBtnStyleController = filterValue === 'completed' ? s.filterBtnActive : s.filterBtn;
 
-    const newTaskTitleLengthRestriction: number = 10;
-    const titleLengthRestrictionError: boolean = newTaskTitle.length > newTaskTitleLengthRestriction;
-    const titleRequiredError = newTaskTitle.trim().length < 1 && <div>Task title cannot be empty</div>;
-    const addTaskBtnDisabled = !newTaskTitle.trim().length || titleLengthRestrictionError;
-    const titleLengthExceededError = titleLengthRestrictionError &&
-        <div>Title shouldn't exceed 10 characters</div>;
-    const changeFilterCreator = (filter: FilterValuesType): () => void => (): void => changeFilter(filter);
+    const inputValueEmptyWarning = !inputValue.trim().length;
+    const inputValueLengthRestriction = inputValue.trim().length > 10;
+    const addTaskBtnDisabled = inputValueEmptyWarning || inputValueLengthRestriction;
+    const taskTitleRequiredWarning = error && <span className={s.warning}>Task title is required</span>;
+    const taskTitleLengthRestrictionWarning = inputValueLengthRestriction &&
+        <span className={s.warning}>Task title shouldn't exceed 10 characters</span>
 
     return (
         <div className={s.Todolist}>
-            <h3>{todolistTitle}</h3>
+            <h2>{todolistTitle}</h2>
             <div>
                 <input
-                    placeholder={'Add new task'}
-                    value={newTaskTitle}
+                    className={error || inputValueLengthRestriction ? s.inputWarningTextBox : undefined}
+                    placeholder={'Please type your task title'}
+                    value={inputValue}
                     onChange={inputOnChangeHandler}
                     onKeyDown={inputOnKeyDownHandler}
                 />
@@ -67,17 +76,55 @@ export const Todolist: React.FC<TodolistPropsType> = (props) => {
                     onClick={addTaskOnClickHandler}
                 >+
                 </button>
-                {titleRequiredError} {titleLengthExceededError}
             </div>
+            {taskTitleRequiredWarning}
+            {taskTitleLengthRestrictionWarning}
             <TasksList
                 tasks={tasks}
-                deleteTask={deleteTask}
+                removeTask={removeTask}
+                filterValue={filterValue}
+                changeTaskStatus={changeTaskStatus}
             />
-            <div>
-                <button onClick={changeFilterCreator('all')}>ALL</button>
-                <button onClick={changeFilterCreator('active')}>Active</button>
-                <button onClick={changeFilterCreator('completed')}>Completed</button>
+            <div className={s.filterBtnWrapper}>
+                <button
+                    className={filterAllBtnStyleController}
+                    onClick={filterOnClickHandlerCreator('all')}>All
+                </button>
+                <button
+                    className={filterActiveBtnStyleController}
+                    onClick={filterOnClickHandlerCreator('active')}>Active
+                </button>
+                <button
+                    className={filterCompletedBtnStyleController}
+                    onClick={filterOnClickHandlerCreator('completed')}>Completed
+                </button>
             </div>
         </div>
     );
 };
+
+export default Todolist;
+
+// let isAllTasksIsDone = true;
+// for(let i = 0; i < tasks.length; i++) {
+//     if (tasks[i].isDone){
+//         isAllTasksIsDone = false
+//         break
+//     }
+// }
+// const todoClasses = isAllTasksIsDone ? s.todolistEmpty : s.Todolist;
+
+// const filterHandlerCreator = (filterValue: FilterValuesType): () => void => () : void => changeFilter(filterValue)
+// <div className={s.Todolist}>
+//     <h3>{todolistTitle}</h3>
+//     <div>
+//         <input/>
+//         <button>+</button>
+//     </div>
+//     <TasksList tasks={tasks} removeTask={removeTask}/>
+//     <div>
+//         <button onClick={filterHandlerCreator('all')}>All</button>
+//         <button onClick={filterHandlerCreator('active')}>Active</button>
+//         <button onClick={filterHandlerCreator('completed')}>Completed</button>
+//     </div>
+// </div>

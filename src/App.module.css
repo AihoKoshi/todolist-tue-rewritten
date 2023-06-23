@@ -9,7 +9,68 @@
 
 .Todolist {
     border: 2px solid hotpink;
+    background-color: darkseagreen;
     border-radius: 5px;
     padding: 20px;
     margin: 20px;
+}
+
+.todolistEmpty {
+    background-color: lightgreen;
+}
+
+.warning {
+    color: darkred;
+    font-weight: lighter;
+    outline: none;
+}
+
+.task {
+    font-weight: bolder;
+    margin-left: 5px;
+}
+
+.taskIsDone {
+    font-weight: lighter;
+    text-decoration: line-through;
+    margin-left: 5px;
+}
+
+.filterBtn {
+    border: none;
+    border-radius: 3px;
+    padding: 3px 10px;
+}
+
+.filterBtnActive {
+    border-color: coral;
+    border-radius: 3px;
+    background-color: coral;
+    color: white;
+}
+
+.filterBtnWrapper {
+    display: flex;
+    justify-content: space-between;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    display: flex;
+    justify-content: space-between;
+    padding: 1px 0;
+}
+
+h2 {
+    text-align: center;
+    opacity: 70%;
+}
+
+.inputWarningTextBox {
+    border: 2px solid red;
+    outline: none;
 }
