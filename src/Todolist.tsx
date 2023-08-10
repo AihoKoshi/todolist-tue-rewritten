@@ -12,21 +12,25 @@ export type TaskType = {
 }
 
 export type TodolistPropsType = {
+    todoListId: string
     todolistTitle: string
     tasks: Array<TaskType>
-    removeTask: (taskID: string) => void
-    changeFilter: (filterValue: FilterValuesType) => void
-    addTask: (inputValue: string) => void
+    removeTask: (taskID: string, todoListId: string) => void
+    removeTodoList: (todoListId: string) => void
+    changeFilter: (filterValue: FilterValuesType, todoListId: string) => void
+    addTask: (inputValue: string, todoListId: string) => void
     filterValue: FilterValuesType
-    changeTaskStatus: (taskID: string, newIsDoneValue: boolean) => void
+    changeTaskStatus: (taskID: string, newIsDoneValue: boolean, todoListId: string) => void
 }
 
 const Todolist: FC<TodolistPropsType> = (props): React.ReactElement | null => {
 
     const {
+        todoListId,
         todolistTitle,
         tasks,
         removeTask,
+        removeTodoList,
         changeFilter,
         addTask,
         filterValue,
@@ -37,7 +41,7 @@ const Todolist: FC<TodolistPropsType> = (props): React.ReactElement | null => {
     const [error, setError] = useState<boolean>(false);
 
     const addTaskOnClickHandler = () => {
-        addTaskBtnDisabled ? setError(true) : addTask(inputValue.trim())
+        addTaskBtnDisabled ? setError(true) : addTask(inputValue.trim(), todoListId)
         setInputValue('')
     };
     const inputOnChangeHandler = (e: ChangeEvent<HTMLInputElement>) => {
@@ -48,7 +52,16 @@ const Todolist: FC<TodolistPropsType> = (props): React.ReactElement | null => {
         inputValueEmptyWarning && setError(true)
         !inputValueLengthRestriction && e.key === 'Enter' && addTaskOnClickHandler()
     };
-    const filterOnClickHandlerCreator = (filter: FilterValuesType): () => void => (): void => changeFilter(filter);
+    const erase = () => {
+        setInputValue(inputValue.slice(0, -1))
+    };
+    const clearInput = () => {
+        setInputValue('')
+    }
+    const removeTodoListOnClickHandler = () => {
+        removeTodoList(todoListId)
+    }
+    const filterOnClickHandlerCreator = (filter: FilterValuesType): () => void => (): void => changeFilter(filter, todoListId);
     const filterAllBtnStyleController = filterValue === 'all' ? s.filterBtnActive : s.filterBtn;
     const filterActiveBtnStyleController = filterValue === 'active' ? s.filterBtnActive : s.filterBtn;
     const filterCompletedBtnStyleController = filterValue === 'completed' ? s.filterBtnActive : s.filterBtn;
@@ -63,6 +76,10 @@ const Todolist: FC<TodolistPropsType> = (props): React.ReactElement | null => {
     return (
         <div className={s.Todolist}>
             <h2>{todolistTitle}</h2>
+            <button
+                onClick={removeTodoListOnClickHandler}
+            >DELETE TODOLIST
+            </button>
             <div>
                 <input
                     className={error || inputValueLengthRestriction ? s.inputWarningTextBox : undefined}
@@ -76,11 +93,22 @@ const Todolist: FC<TodolistPropsType> = (props): React.ReactElement | null => {
                     onClick={addTaskOnClickHandler}
                 >+
                 </button>
+                <button
+                    disabled={!inputValue}
+                    onClick={erase}
+                >erase
+                </button>
+                <button
+                    disabled={!inputValue}
+                    onClick={clearInput}
+                >delete
+                </button>
             </div>
             {taskTitleRequiredWarning}
             {taskTitleLengthRestrictionWarning}
             <TasksList
                 tasks={tasks}
+                todoListId={todoListId}
                 removeTask={removeTask}
                 filterValue={filterValue}
                 changeTaskStatus={changeTaskStatus}

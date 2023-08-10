@@ -6,15 +6,17 @@ import {FilterValuesType} from "./App";
 
 export type TasksListProps = {
     tasks: Array<TaskType>
-    removeTask: (taskID: string) => void
+    todoListId: string
+    removeTask: (taskID: string, todoListId: string) => void
     filterValue: FilterValuesType
-    changeTaskStatus: (taskID: string, newIsDoneValue: boolean) => void
+    changeTaskStatus: (taskID: string, newIsDoneValue: boolean, todoListId: string) => void
 }
 
 const TasksList: React.FC<TasksListProps> = (props): JSX.Element => {
 
     const {
         tasks,
+        todoListId,
         removeTask,
         filterValue,
         changeTaskStatus,
@@ -22,9 +24,9 @@ const TasksList: React.FC<TasksListProps> = (props): JSX.Element => {
 
     const tasksItems: JSX.Element[] | JSX.Element = tasks.length
         ? tasks.map((task) => {
-            const removeTaskOnClickHandler = () => removeTask(task.id);
+            const removeTaskOnClickHandler = () => removeTask(task.id, todoListId);
             const changeTaskStatusHandler = (e: ChangeEvent<HTMLInputElement>) => {
-                changeTaskStatus(task.id, e.currentTarget.checked)
+                changeTaskStatus(task.id, e.currentTarget.checked, todoListId)
             };
             const taskClasses = task.isDone ? s.taskIsDone : s.task;
             return (
